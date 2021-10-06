@@ -1,0 +1,23 @@
+{
+  "name": "rest-shop",
+  "version": "1.0.0",
+  "description": "Practice rest shop youtube",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibam-voxel/node-rest-shop.git"
+  },
+  "author": "ibam voxel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ibam-voxel/node-rest-shop/issues"
+  },
+  "homepage": "https://github.com/ibam-voxel/node-rest-shop#readme",
+  "devDependencies": {
+    "express": "^4.17.1"
+  }
+}
