@@ -4,34 +4,51 @@ const router = express.Router();
 
 const Product = require('../models/products');
 
-router.get('/', (req, res, next) => {
-  Product.find()
-  .exec()
-  .then(docs => {
-    console.log(docs)
-    // if (docs.length >= 0) {
-    res.status(200).json(docs)
-    // } else {
-    //   res.status(400).json({
-    //     message: 'No Valid Result'
-    //   })
-    // }
-  })
-  .catch(err => {
-    console.log(err)
-    res.status(500).json({error: err})
-  })
+router.get('/', async (req, res, next) => {
+  const response = await Product.find().select('name price _id').exec()
+
+  if (!response) {
+    return res.status(404).json({
+      status: 404,
+      message: 'Data not Found'
+    })
+  }
+
+  const result = {
+    count: response.length,
+    products: response.map(v => {
+      return {
+        name: v.name,
+        price: v.price,
+        _id: v._id,
+        request: {
+          type: 'GET',
+          url: 'http://localhost:5000/products/' + v._id
+        }
+      }
+    })
+  }
+
+  return res.status(200).json(result)
 });
 
 router.get('/:invoiceId', (req, res, next) => {
   const id = req.params.invoiceId
   Product.findById(id)
+  .select('name price _id')
   .exec()
   .then(doc => {
     console.log(doc)
 
     if (doc) {
-      res.status(200).json(doc);
+      res.status(200).json({
+        product: doc,
+        request: {
+          type: 'GET',
+          desciption: 'Get All Products',
+          url: 'http://localhost:5000/products/'
+        }
+      });
     } else {
       res.status(400).json({
         message: 'No valid entry found for provided ID'
@@ -57,7 +74,15 @@ router.post('/', (req, res, next) => {
       console.log(result)
       res.status(201).json({
         message: 'Berhasil create data',
-        createdProduct: result
+        createdProduct: {
+          name: result.name,
+          price: result.price,
+          _id: result._id,
+          request: {
+            type: 'GET',
+            url: 'http://localhost:5000/products/' + result._id
+          }
+        },
       });
     })
     .catch(err => {
@@ -86,8 +111,6 @@ router.put('/:invoiceId', async (req, res, next) => {
     body
   )
 
-  console.log('update', update)
-
   if (!update) {
     res.status(501).json({
       status: 501,
@@ -98,7 +121,15 @@ router.put('/:invoiceId', async (req, res, next) => {
 
   res.status(200).json({
     message: 'Product Success Updated',
-    data: update
+    data: {
+      _id: update._id,
+      name: update.name,
+      price: update.price
+    },
+    request: {
+      type: 'GET',
+      url: 'http://localhost:5000/products/' + update._id
+    }
   });
 });
 
@@ -115,7 +146,15 @@ router.delete('/:invoiceId', async (req, res, next) => {
 
   res.status(200).json({
     status: 200,
-    message: `Berhasil Delete ${id}`
+    message: `Berhasil Delete ${id}`,
+    request: {
+      type: 'POST',
+      url: 'http://localhost:5000/products/',
+      body: {
+        name: 'String',
+        price: 'Number'
+      }
+    }
   })
 });
 
