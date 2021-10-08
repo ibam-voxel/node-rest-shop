@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "body-parser": "^1.19.0",
+    "mongoose": "^6.0.9",
     "morgan": "^1.10.0"
   }
 }
