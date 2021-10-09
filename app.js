@@ -10,9 +10,9 @@ const orderRoutes = require('./api/routes/orders')
 mongoose.connect('mongodb+srv://node-shop-rest:' + process.env.MONGO_ATLAS_PW + '@node-shop.mfggt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
 
 app.use(morgan('dev'));
+app.use('/uploads', express.static('uploads'))
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header(
