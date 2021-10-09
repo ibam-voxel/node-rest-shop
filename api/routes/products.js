@@ -1,11 +1,41 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './uploads/');
+    console.log('cb', cb)
+  },
+  filename: function(req, file, cb) {
+    cb(null, new Date().toISOString().replace(/:/g, '-') + file.originalname);
+  }
+})
+
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  console.log(file)
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(new Error('Message file invalid'), false);
+  } 
+}
+
+// untuk folder upload
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 1024 * 1024 * 5
+  },
+  fileFilter
+});
 
 const Product = require('../models/products');
 
 router.get('/', async (req, res, next) => {
-  const response = await Product.find().select('name price _id').exec()
+  const response = await Product.find().select('name price _id productImage').exec()
 
   if (!response) {
     return res.status(404).json({
@@ -21,6 +51,7 @@ router.get('/', async (req, res, next) => {
         name: v.name,
         price: v.price,
         _id: v._id,
+        productImage: v.productImage,
         request: {
           type: 'GET',
           url: 'http://localhost:5000/products/' + v._id
@@ -35,7 +66,7 @@ router.get('/', async (req, res, next) => {
 router.get('/:invoiceId', (req, res, next) => {
   const id = req.params.invoiceId
   Product.findById(id)
-  .select('name price _id')
+  .select('name price _id productImage')
   .exec()
   .then(doc => {
     console.log(doc)
@@ -60,12 +91,14 @@ router.get('/:invoiceId', (req, res, next) => {
   })
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', upload.single('productImage'), (req, res) => {
+  console.log('req.file',req.file)
   // store di mongoose
   const product = new Product({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
-    price: req.body.price
+    price: req.body.price,
+    productImage: req.file.path
   });
 
   product
@@ -78,6 +111,7 @@ router.post('/', (req, res, next) => {
           name: result.name,
           price: result.price,
           _id: result._id,
+          productImage: result.productImage,
           request: {
             type: 'GET',
             url: 'http://localhost:5000/products/' + result._id
