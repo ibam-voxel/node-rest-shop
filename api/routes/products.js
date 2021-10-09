@@ -142,6 +142,7 @@ router.delete('/:invoiceId', async (req, res, next) => {
       status: 501,
       message: 'Delete Product Fail'
     })
+    return
   }
 
   res.status(200).json({
