@@ -111,8 +111,8 @@ router.post('/', async (req, res, next) => {
     });
   }
 
-  res.status(200).json({
-    status: 200,
+  res.status(201).json({
+    status: 201,
     message: 'Berhasil Buat Data',
     data: {
       _id: order._id,
