@@ -1,11 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-
+const checkAuth = require('../middleware/check-auth');
 const Order = require('../models/order');
 const Product = require('../models/products');
 
-router.get('/', async (req, res, next) => {
+router.get('/', checkAuth, async (req, res, next) => {
   const orders = await Order.find()
 
   if (!orders) {
@@ -32,7 +32,7 @@ router.get('/', async (req, res, next) => {
   });
 });
 
-router.get('/:orderId', async (req, res, next) => {
+router.get('/:orderId', checkAuth, async (req, res, next) => {
   const id = req.params.orderId
   let order, product
   try {
@@ -74,7 +74,7 @@ router.get('/:orderId', async (req, res, next) => {
   });
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', checkAuth, async (req, res, next) => {
   let product = null
   let order = null
 
@@ -123,7 +123,7 @@ router.post('/', async (req, res, next) => {
   });
 });
 
-router.put('/:orderId', async (req, res, next) => {
+router.put('/:orderId', checkAuth, async (req, res, next) => {
   const {
     params: { orderId },
     body
@@ -184,7 +184,7 @@ router.put('/:orderId', async (req, res, next) => {
   });
 });
 
-router.delete('/:orderId', async (req, res, next) => {
+router.delete('/:orderId', checkAuth, async (req, res, next) => {
   const id = req.params.orderId
   let result
   try {
