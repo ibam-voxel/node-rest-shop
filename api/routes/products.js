@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 const multer = require('multer');
+const checkAuth = require('../middleware/check-auth');
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -34,7 +35,7 @@ const upload = multer({
 
 const Product = require('../models/products');
 
-router.get('/', async (req, res, next) => {
+router.get('/', checkAuth, async (req, res, next) => {
   const response = await Product.find().select('name price _id productImage').exec()
 
   if (!response) {
@@ -63,7 +64,7 @@ router.get('/', async (req, res, next) => {
   return res.status(200).json(result)
 });
 
-router.get('/:invoiceId', (req, res, next) => {
+router.get('/:invoiceId', checkAuth, (req, res, next) => {
   const id = req.params.invoiceId
   Product.findById(id)
   .select('name price _id productImage')
@@ -91,7 +92,7 @@ router.get('/:invoiceId', (req, res, next) => {
   })
 });
 
-router.post('/', upload.single('productImage'), (req, res) => {
+router.post('/', checkAuth, upload.single('productImage'), (req, res) => {
   console.log('req.file',req.file)
   // store di mongoose
   const product = new Product({
@@ -125,7 +126,7 @@ router.post('/', upload.single('productImage'), (req, res) => {
     });
 });
 
-router.put('/:invoiceId', async (req, res, next) => {
+router.put('/:invoiceId', checkAuth, async (req, res, next) => {
   const {
     params: { invoiceId },
     body
@@ -167,7 +168,7 @@ router.put('/:invoiceId', async (req, res, next) => {
   });
 });
 
-router.delete('/:invoiceId', async (req, res, next) => {
+router.delete('/:invoiceId', checkAuth, async (req, res, next) => {
   const id = req.params.invoiceId
   const result = await Product.findByIdAndDelete({ _id: id })
 
