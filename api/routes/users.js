@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const router = express.Router();
 
 const User = require('../models/user');
@@ -36,7 +37,7 @@ router.get('/signup', async (req, res, next) => {
 router.post('/signup', async (req, res) => {
   const { body } = req
 
-  let checkUser = null
+  // let checkUser = null
 
   // try {
   //   const data = await User.findOne({
@@ -126,6 +127,57 @@ router.post('/signup', async (req, res) => {
   })
 })
 
+router.post('/login', async (req, res) => {
+  const { body } = req
+
+  let user = null
+  try {
+    const data = await User.findOne({
+      email: body.email
+    })
+    user = data
+  } catch (err) {
+    user = null
+  }
+
+  if (!user) {
+    res.status(404).json({
+      status: 404,
+      message: 'User Not Found'
+    })
+  }
+
+  console.log('user', user)
+
+  // check if password match
+  const compare = await comparePassword(body, user.password)
+
+  if (!compare) {
+    return res.status(402).json({
+      message: 'Auth Failed'
+    })
+  } else {
+    const token = jwt.sign({
+      email: user.email,
+      userId: user._id
+    },
+    process.env.JWT_KEY,
+    {
+      expiresIn: "1h"
+    }
+    )
+    res.status(200).json({
+      message: 'Auth Successfull',
+      token
+    })
+  }
+
+  res.status(200).json({
+    status: 200,
+    message: 'Success Login'
+  })
+})
+
 router.delete('/signup/:userId', async (req, res, next) => {
   const id = req.params.userId
   let result
@@ -169,6 +221,21 @@ async function hashPassword (body) {
       resolve(hash)
     });
   })
+
+  return hashedPassword
+}
+
+async function comparePassword (body, userPassword) {
+
+  const password = body.password
+
+  const hashedPassword = await new Promise((resolve, reject) => {
+    bcrypt.compare(password, userPassword, function(err, res) {
+      if (err) reject(err)
+      resolve(res)
+    });
+  })
+  console.log('hashedPassword', hashedPassword)
 
   return hashedPassword
 }
